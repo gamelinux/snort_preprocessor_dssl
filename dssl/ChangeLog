@@ -1,0 +1,10 @@
+2007-04-19: build 1.0.2
+	* DSSL_NO_PCAP define added. Now you can compile DSSL without referencing functions from pcap library.
+
+2007-03-26: build 1.0.1
+	* Fix RSA private key file loading errors.
+	* Fix memory leak in MAC calculation.
+
+2007-01-17: build 1.0.0
+	* First public release.
+

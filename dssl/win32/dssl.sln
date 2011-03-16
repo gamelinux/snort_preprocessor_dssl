@@ -1,0 +1,40 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libdssl", "..\libdssl.vcproj", "{0E486FDF-DCB8-4514-A616-865745A9B721}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tests", "..\tests\tests.vcproj", "{F2BD7E90-4BD9-4047-B8E7-E7FAE9034D60}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0E486FDF-DCB8-4514-A616-865745A9B721} = {0E486FDF-DCB8-4514-A616-865745A9B721}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Debug-DSSL_NO_PCAP = Debug-DSSL_NO_PCAP
+		Release = Release
+		Release-DSSL_NO_PCAP = Release-DSSL_NO_PCAP
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{0E486FDF-DCB8-4514-A616-865745A9B721}.Debug.ActiveCfg = Debug|Win32
+		{0E486FDF-DCB8-4514-A616-865745A9B721}.Debug.Build.0 = Debug|Win32
+		{0E486FDF-DCB8-4514-A616-865745A9B721}.Debug-DSSL_NO_PCAP.ActiveCfg = Debug-DSSL_NO_PCAP|Win32
+		{0E486FDF-DCB8-4514-A616-865745A9B721}.Debug-DSSL_NO_PCAP.Build.0 = Debug-DSSL_NO_PCAP|Win32
+		{0E486FDF-DCB8-4514-A616-865745A9B721}.Release.ActiveCfg = Release|Win32
+		{0E486FDF-DCB8-4514-A616-865745A9B721}.Release.Build.0 = Release|Win32
+		{0E486FDF-DCB8-4514-A616-865745A9B721}.Release-DSSL_NO_PCAP.ActiveCfg = Release-DSSL_NO_PCAP|Win32
+		{0E486FDF-DCB8-4514-A616-865745A9B721}.Release-DSSL_NO_PCAP.Build.0 = Release-DSSL_NO_PCAP|Win32
+		{F2BD7E90-4BD9-4047-B8E7-E7FAE9034D60}.Debug.ActiveCfg = Debug|Win32
+		{F2BD7E90-4BD9-4047-B8E7-E7FAE9034D60}.Debug.Build.0 = Debug|Win32
+		{F2BD7E90-4BD9-4047-B8E7-E7FAE9034D60}.Debug-DSSL_NO_PCAP.ActiveCfg = Debug-DSSL_NO_PCAP|Win32
+		{F2BD7E90-4BD9-4047-B8E7-E7FAE9034D60}.Release.ActiveCfg = Release|Win32
+		{F2BD7E90-4BD9-4047-B8E7-E7FAE9034D60}.Release.Build.0 = Release|Win32
+		{F2BD7E90-4BD9-4047-B8E7-E7FAE9034D60}.Release-DSSL_NO_PCAP.ActiveCfg = Release-DSSL_NO_PCAP|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

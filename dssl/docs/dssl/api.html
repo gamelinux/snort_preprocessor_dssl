@@ -1,0 +1,235 @@
+<html>
+<head>
+	<title>About DSSL</title>
+	<link rel="stylesheet" type="text/css" href="api.css"/>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+</head>
+<body>
+	<h1 align="center">DSSL Library Documentation</h1>
+	<p align="center">Version 1.0.1</p>
+<h2>API Reference</h2>
+<H3>Data Structures</H3>
+<HR>
+
+<P>The following list constitutes DSSL's most important data structures. Note 
+that all of these structures should be considered as opaque types and used only 
+as arguments to DSSL API functions.</P>
+<H4>CapEnv</H4>
+<P>This is the main structure in DSSL framework that links all the DSSL 
+components together and with libpcap capture adapter.</P>
+<H4>DSSL_Env</H4>
+<P>This structure stores global SSL decryption environment data such as a list 
+of SSL server addresses and SSL session cache for SSL session resumption.</P>
+<H4>DSSL_Session</H4>
+<P>Represents a single SSL session.</P>
+<H4>DSSL_ServerInfo</H4>
+<P>Represents SSL server data: IP address, RSA private key, keyfile password, 
+etc.</P>
+<H4>TcpSession</H4>
+<P>Represents a single TCP session. This structure is used by DSSL's TCP 
+reassemly code.</P>
+<H4>Pkt</H4>
+<P>Represents a captured network packet. This structure is used by DSSL's TCP 
+reassemly code.</P>
+<H3>Enums and Defines</H3>
+<HR>
+
+<H4>NM_PacketDir enum</H4>
+<P>Defines a packet directions within TCP session.</P><PRE style="BACKGROUND-COLOR: #e0edff">typedef enum NM_PacketDir_
+{
+	ePacketDirInvalid,
+	ePacketDirFromClient,
+	ePacketDirFromServer
+} NM_PacketDir;</PRE>
+<H4>DSSL_EVENT_XXX codes</H4>
+<P>Session event codes used in CapEnvSessionCallback callback.</P><PRE style="BACKGROUND-COLOR: #e0edff">#define DSSL_EVENT_NEW_SESSION		0
+#define DSSL_EVENT_SESSION_CLOSING	1</PRE>
+<H3>Function Prototypes</H3>
+<HR>
+
+<H4>CapEnvSessionCallback</H4>
+<P>A prototype of CapEnv session event callback function. This callback function 
+is called every time CapEnv is about to create a new session or an existing 
+session is about to be closed.</P><PRE style="BACKGROUND-COLOR: #e0edff">typedef void (*CapEnvSessionCallback)( struct CapEnv_* env, TcpSession* sess, char event );</PRE>
+<DIV>Parameters:</DIV>
+<DL>
+<DT>env 
+<DD>CapEnv instance that fired this session event. 
+<DT>sess 
+<DD>Event's TCP session. 
+<DT>event 
+<DD>An event code - either DSSL_EVENT_NEW_SESSION or DSSL_EVENT_SESSION_CLOSING. 
+</DD></DL>
+<H4>DataCallbackProc</H4>
+<P>A prototype of the session data callback function.</P><PRE style="BACKGROUND-COLOR: #e0edff">typedef void (*DataCallbackProc)( NM_PacketDir dir, void* user_data, u_char* data, uint32_t len );</PRE>
+<DIV>Parameters:</DIV>
+<DL>
+<DT>dir 
+<DD>Packet direction (ePacketDirFromClient or ePacketDirFromServer NM_PacketDir 
+enum value) 
+<DT>user_data 
+<DD>Application-defined data associated with the TCP or SSL session. See 
+SessionSetCallback function. 
+<DT>data 
+<DD>Pointer to the reassembled / decrypted packet payload data. 
+<DT>len 
+<DD>Length of data in bytes. </DD></DL>
+<H4>ErrorCallbackProc</H4>
+<P>A prototype of the session error callback function.</P><PRE style="BACKGROUND-COLOR: #e0edff">typedef void (*ErrorCallbackProc)( void* user_data, int error_code );</PRE>
+<DIV>Parameters:</DIV>
+<DL>
+<DT>user_data 
+<DD>Application-defined data associated with the TCP or SSL session. See 
+SessionSetCallback function. 
+<DT>error_code 
+<DD>One of DSSL_E_XXX error codes. </DD></DL>
+<H3>DSSL Framework API Functions</H3>
+<HR>
+
+<P>This section documents DSSL public instance management, initialization and 
+data processing API.</P>
+<H4>CapEnvCreate</H4>
+<P>Creates a CapEnv structure and initialize it with pcap_t capture handle, TCP 
+session table size and SSL session timeout interval in seconds.</P><PRE style="BACKGROUND-COLOR: #e0edff">CapEnv* CapEnvCreate( pcap_t* adapter, int sessionTableSize, uint32_t cache_timeout_interval );</PRE>
+<H4>CapEnvDestroy</H4>
+<P>Destroys a CapEnv instance and frees allocated memory.</P><PRE style="BACKGROUND-COLOR: #e0edff">void CapEnvDestroy( CapEnv* env );</PRE>
+<H4>CapEnvCapture</H4>
+<P>Process packets captured by calling by pcap_loop routine on env's pcap 
+handle.</P><PRE style="BACKGROUND-COLOR: #e0edff">int CapEnvCapture( CapEnv* env );</PRE>
+<H4>CapEnvSetSessionCallback</H4>
+<P>Sets a callback function that is executed every time a TCP session is created 
+or destroyed within the given CapEnv instance.</P><PRE style="BACKGROUND-COLOR: #e0edff">void CapEnvSetSessionCallback( 
+		CapEnv*                     env,
+		CapEnvSessionCallback		callback,
+		void*                       user_data,
+		); </PRE>
+<H4>CapEnvFindDSSL_ServerInfo</H4>
+<P>Searches env's SSL server list for a server by its IP address and port 
+number.</P><PRE style="BACKGROUND-COLOR: #e0edff">DSSL_ServerInfo* CapEnvFindDSSL_ServerInfo(
+        CapEnv*         env,
+        struct in_addr* server_ip,
+        uint16_t        server_port );</PRE>
+<DIV>Parameters:</DIV>
+<DL>
+<DT>env 
+<DD>CapEnv instance to search within. 
+<DT>ip_address 
+<DD>Target server's IP address. 
+<DT>port 
+<DD>Target server's TCP port number. </DD></DL>
+<H4>CapEnvSetSSL_ServerInfo</H4>
+<P>Adds SSL server data to CapEnv's DSSL decryption module.</P><PRE style="BACKGROUND-COLOR: #e0edff">int CapEnvSetSSL_ServerInfo( 
+		CapEnv*             env,
+		struct in_addr*	    ip_address,
+		uint16_t            port, 
+		const char*         certfile,
+		const char*         keyfile,
+		const char*         password );</PRE>
+<DIV>Parameters:</DIV>
+<DL>
+<DT>env 
+<DD>CapEnv instance for which the SSL server info is set 
+<DT>ip_address 
+<DD>Server IP address 
+<DT>port 
+<DD>Server TCP port number 
+<DT>certfile 
+<DD>Server certificate file. Can be NULL when the keyfile parameter is provided. 
+
+<DT>keyfile 
+<DD>Server private key file. If NULL, the certfile parameter should be provided 
+and the certificate must contain server's private key. 
+<DT>password 
+<DD>Key file password. Can be NULL if the keyfile is not encrypted. </DD></DL>
+<H3>SSL Traffic Decryption API</H3>
+<HR>
+
+<P>SSL decryption layer has its own API that can be used as a stand-alone 
+interface, bypassing the CapEnv TCP reassembly module. It is designed for 
+applications that have their own TCP reassembly layer.</P>
+<H4>DSSL_EnvCreate</H4>
+<P>Creates a DSSL decryption environment object.</P><PRE style="BACKGROUND-COLOR: #e0edff">DSSL_Env* DSSL_EnvCreate(
+		int session_cache_size,
+		uint32_t cache_timeout_interval );</PRE>
+<DIV>Parameters:</DIV>
+<DL>
+<DT>session_cache_size 
+<DD>Defines the size of a hash table used to store previously negotiated SSL 
+sessions in order to handle SSL session resumption. 
+<DT>cache_timeout_interval 
+<DD>A SSL session timeout value in seconds. If a session is not resumed within 
+this interval, it gets removed from the cache. </DD></DL>
+<H4>DSSL_EnvDestroy</H4>
+<P>Destroys DSSL_Env object.</P><PRE style="BACKGROUND-COLOR: #e0edff">void DSSL_EnvDestroy( DSSL_Env* env );</PRE>
+<H4>DSSL_EnvSetServerInfo</H4>
+<P>Adds SSL server data to DSSL_Evn server table.</P><PRE style="BACKGROUND-COLOR: #e0edff">int DSSL_EnvSetServerInfo( 
+		DSSL_Env*           env,
+		struct in_addr*	    ip_address,
+		uint16_t            port, 
+		const char*         certfile,
+		const char*         keyfile,
+		const char*         password );</PRE>
+<DIV>Parameters:</DIV>
+<DL>
+<DT>env 
+<DD>CapEnv instance for which the SSL server info is set 
+<DT>ip_address 
+<DD>Server IP address 
+<DT>port 
+<DD>Server TCP port number 
+<DT>certfile 
+<DD>Server certificate file. Can be NULL when the keyfile parameter is provided. 
+
+<DT>keyfile 
+<DD>Server private key file. If NULL, the certfile parameter should be provided 
+and the certificate must contain server's private key. 
+<DT>password 
+<DD>Key file password. Can be NULL if the keyfile is not encrypted. </DD></DL>
+<H4>DSSL_SessionInit</H4>
+<P>Initialize DSSL_Session object.</P><PRE style="BACKGROUND-COLOR: #e0edff">void DSSL_SessionInit(
+		DSSL_Env*			env,
+		DSSL_Session*		s,
+		DSSL_ServerInfo*	si );</PRE>
+<H4>DSSL_SessionDeInit</H4>
+<P>Destroy DSSL_Session internal structures. Call this method before freeing the 
+DSSL_Session object.</P><PRE style="BACKGROUND-COLOR: #e0edff">void DSSL_SessionDeInit( DSSL_Session* s );</PRE>
+<H4>DSSL_SessionSetCallback</H4>
+<P>Set the data and error callback routines for DSSL_Session object.</P><PRE style="BACKGROUND-COLOR: #e0edff">void DSSL_SessionSetCallback( 
+		DSSL_Session*		sess,
+		SessionCallbackProc data_callback, 
+		ErrorCallbackProc	error_callback,
+		void*				user_data );</PRE>
+<DIV>Parameters:</DIV>
+<DL>
+<DT>sess 
+<DD>DSSL_Session object 
+<DT>data_callback 
+<DD>A callback routine that is be called when new data (SSL payload) is 
+decrypted and ready to be processed. 
+<DT>error_callback 
+<DD>A error callback routine that is called when an error occurs. 
+<DT>user_data 
+<DD>User-defined application data associated with this session. </DD></DL>
+<H4>DSSL_SessionProcessData</H4>
+<P>This is a main SSL layer entry point that process decrypts SSL data and 
+returns decrypted payload through DSSL_Session data callback routine.</P><PRE style="BACKGROUND-COLOR: #e0edff">int DSSL_SessionProcessData(
+		DSSL_Session*       sess,
+		NM_PacketDir        dir,
+		u_char*             data,
+		uint32_t            len );</PRE>
+<DIV>Parameters:</DIV>
+<DL>
+<DT>sess 
+<DD>DSSL_Session object 
+<DT>dir 
+<DD>Packet direction. Can be one of the following: ePacketDirFromClient for 
+client-to-server packet or ePacketDirFromServer for server-to-client packet. 
+<DT>data 
+<DD>Packet data, starting from the TCP payload. Note that it is the caller's 
+responsibility to strip lower-level network protocol headers (Ethernet, IP, 
+TCP). 
+<DT>len 
+<DD>Data size in bytes </DD></DL>
+<small>Copyright &copy; <a href="http://www.ssltech.net">SSLTech.net</a>, 2005-2007. All rights reserved.</small>
+</body>
+</html>

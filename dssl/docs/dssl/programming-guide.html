@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+		<title>Programming Guide - DSSL Library Documentation</title>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+	</head>
+	<body>
+		<h1 align="center">DSSL Library Documentation</h1>
+		<p align="center">Version 1.0.1</p>
+		<h2>DSSL Programming Guide</h2>
+		<p>There are two different ways you can use DSSL: as a full-featured framework or just the SSL decryption 
+		module alone.</p>
+		<h3><a name="framework">Using DSSL Framework</a></h3>
+		<p>If you plan to use DSSL as your main TCP reassembly, session management, and SSL decryption module, 
+		you need to:</p>
+		<ul>
+			<li>Create a <code>CapEnv</code> object and attach it to your <code>pcap_t</code> capture handle 
+			using <code>CapEnvCreate</code> function.</li>
+			<li>Call <code>CapEnvSetSSL_ServerInfo</code> for each SSL server, which traffic you want CapEnv to decrypt</li>
+			<li>Use <code>CapEnvSetSessionCallback</code> function to set up a session callback routine that will be
+			called every time CapEnv is about to create a new session (DSSL_EVENT_NEW_SESSION) or an existing session 
+			is about to be closed (DSSL_EVENT_SESSION_CLOSING). </li>
+			<li>When your session callback function is called with DSSL_EVENT_NEW_SESSION event, 
+			set the data and error callback functions for a newly created session. These functions will be called
+			when new data is available on a session, and when DSSL encounters an error while processing session
+			packet, respectively.</li>
+			<li>Call <code>CapEnvCapture</code> to start the capture on the <code>pcap_t</code> handle associated 
+			with your CapEnv instance. You’ll get your callback functions called as the data start passing through.
+			<i>Remember that the callback functions must not block!</i></li>
+			<li>After you are done with the CapEnv object, call CapEnvDestroy.</li>
+		</ul>
+		<h3><a name="sslonly">Using SSL Decryption layer only</a></h3>
+			<p>If you already have the TCP layer reassembly and session management code, 
+			but want to use DSSL for SSL decryption, you need to follow these steps:</p>
+			<ol>
+				<li>Creare a DSSL_Env structure using DSSL_EnvCreate function.</li>
+				<li>Call DSSL_EnvSetServerInfo function for each SSL server, which traffic you want to decrypt.</li>
+				<li>When you see a new SSL session in a captured traffic, create a <code>DSSL_Session</code> object using 
+				<code>DSSL_EnvCreateSession</code> function.</li>
+				<li>For a new SSL session, call <code>DSSL_SessionSetCallback</code> to set 
+				your application data and error callback routines.</li>
+				<li>When a new network packet arrives, resolve the corresponding DSSL_Session object and call 
+				<code>DSSL_SessionProcessData</code> function to process the data. 
+				Note that <code>DSSL_SessionProcessData</code> function expects a pointer to the TCP payload part 
+				of the packet, not the whole packet!</li>
+				<li>DSSL will call the data callback routine set in step 4 each time new chunk of data is deciphered.</li>
+				<li>When a session terminates, call <code>DSSL_SessionDeInit</code> on a corresponding 
+				<code>DSSL_Session</code> object, and then free that object.</li>
+				<li>Finally, destroy the <code>DSSL_Env</code> object when you don’t need it anymore with
+				<code>DSSL_EnvDestroy</code> call.</li>
+		</ol>
+		<hr>
+		<small>Copyright &copy; <a href="http://www.ssltech.net">SSLTech.net</a>, 2005-2007. All rights reserved.</small>
+	</body>
+</html>
